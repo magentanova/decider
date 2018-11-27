@@ -1,0 +1,12 @@
+# packages / binaries
+env
+
+# build
+build
+
+# Byte-compiled / optimized / DLL files
+**/__pycache__
+*.pyc
+
+# secrets
+secrets.py
