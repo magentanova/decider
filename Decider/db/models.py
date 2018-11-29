@@ -21,12 +21,6 @@ def serialize_query_result(resultSet):
 
 Base.serialize_query_result = serialize_query_result
 
-# question_effects = Table('question_effects', Base.metadata,
-#     Column('token_id', Integer, ForeignKey('tokens.id')),
-#     Column('question_id', Integer, ForeignKey('questions.id')),
-#     Column('delta', Integer, nullable=False)
-# )
-
 class Question(Base):
     __tablename__ = "questions"
     id = Column(Integer, primary_key=True)
@@ -67,19 +61,12 @@ class QuestionEffect(Base):
     delta = Column(Integer, nullable=False)
     token = relationship(
         "Token",
-        uselist=False
+        uselist=False,
     )
     question = relationship(
         "Question",
-        uselist=False
+        uselist=False,
     )
-
-class TokenValue(Base):
-    __tablename__ = "token_values"
-    id = Column(Integer, primary_key=True)
-    token = Column(ForeignKey('tokens.id'), nullable=False)
-    user = Column(ForeignKey('users.id'), nullable=False)
-    value = Column(Integer, default=0)
     def to_dict(self):
         columns = self.__table__.columns.keys()
         relationships = self.__mapper__.relationships.keys()
@@ -87,6 +74,31 @@ class TokenValue(Base):
         for col in columns: 
             val = getattr(self, col)
             d[col] = str(val)
+        for relationship in relationships:
+            d[relationship] = getattr(self, relationship).to_dict()
+        return d
+
+
+class TokenValue(Base):
+    __tablename__ = "token_values"
+    id = Column(Integer, primary_key=True)
+    token_id = Column(ForeignKey('tokens.id'), nullable=False)
+    user_id = Column(ForeignKey('users.id'), nullable=False)
+    value = Column(Integer, default=50)
+    token = relationship(
+        "Token",
+        uselist=False,
+    )
+    def to_dict(self):
+        columns = self.__table__.columns.keys()
+        relationships = self.__mapper__.relationships.keys()
+        d = {}
+        for col in columns: 
+            val = getattr(self, col)
+            d[col] = str(val)
+        for relationship in relationships:
+            print(relationship)
+            d[relationship] = getattr(self, relationship).to_dict()
         return d
 
 class User(Base):

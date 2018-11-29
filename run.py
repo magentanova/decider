@@ -1,6 +1,7 @@
 from flask import Flask 
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
+from flask_cors import CORS
 
 from Decider.api import api
 from Decider.config import config
@@ -8,6 +9,9 @@ from Decider.db.db_setup import db_session
 from Decider.db.models import Token, Question, QuestionEffect
 
 app = Flask(__name__)
+
+# enable CORS (from everywhere, for now)
+CORS(app)
 
 # set config options
 for key in config: 
