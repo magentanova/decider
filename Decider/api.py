@@ -1,4 +1,5 @@
 import random
+from functools import wraps
 from flask import Blueprint, jsonify, request
 
 from Decider.db.db_setup import db_session
@@ -6,8 +7,36 @@ from Decider.db.models import Question, QuestionEffect, Token, TokenValue, User
 
 api = Blueprint("api", __name__)
 
+# decorator to protect a route, returning a 401 if anything 
+    # is not sent with a proper auth token 
+def auth_guard(func):
+    @wraps(func)
+    def protectedFunc(*args,**kwargs):
+        authHeader = request.headers.get('Authorization')
+        authToken = None
+        if authHeader:
+            authToken = authHeader.split()[1]
+        if authToken:
+            decoded = { "error_message": None} 
+            # ^^^ what would go here is a means of decoding a user's auth
+                # token. error_message would tell us if the token was 
+                # expired, blacklisted, or otherwise invalid. 
+            if decoded['error_message']:
+                return jsonResponse(decoded['error_message'], status=401)
+            else:
+                return func(*args,**kwargs)
+        else:
+            # return "unauthorized request", 401
+            # ^^^ what we should return 
+            # since this is a prototype and authorization is not implemented, 
+                # we allow the function to run. 
+            return func(*args,**kwargs)
+    return protectedFunc
+
+
 # CRUD (just create, and not even then) portraits
 @api.route("portraits", methods=["POST"])
+@auth_guard
 def save_portrait(): 
     portrait_data = request.get_json()["data"]
     # here is where we would
@@ -19,6 +48,7 @@ def save_portrait():
 
 # CRUD questions
 @api.route("questions")
+@auth_guard
 def read_questions():
     return jsonify({
         "questions": Question.serialize_query_result(Question.query.filter(Question.active == True))
