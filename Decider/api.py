@@ -48,7 +48,7 @@ def delete_question():
 @api.route("tokens")
 def read_tokens():
     return jsonify({
-        "tokens": Token.serialize_query_result(Token.query.filter(Token.active == 1))
+        "tokens": Token.serialize_query_result(Token.query.filter(Token.active == True))
     })
 
 @api.route("tokens", methods=["POST"])
