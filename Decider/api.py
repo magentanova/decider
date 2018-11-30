@@ -6,27 +6,15 @@ from Decider.db.models import Question, QuestionEffect, Token, TokenValue, User
 
 api = Blueprint("api", __name__)
 
-# CRUD tokens
-@api.route("tokens")
-def read_tokens():
+# CRUD (just create, and not even then) portraits
+@api.route("portraits", methods=["POST"])
+def save_portrait(): 
+    portrait_data = request.get_json()["data"]
+    # here is where we would
+        # save to S3 
+        # save an item linked to the user, etc., at that S3 URL
     return jsonify({
-        "tokens": Token.serialize_query_result(Token.query.filter({"active": 1}))
-    })
-
-@api.route("tokens", methods=["POST"])
-def create_token():
-    data = request.get_json()
-    token = Token(name=data["name"], active=1 )
-    db_session.add(token)
-    db_session.commit()
-    return jsonify({
-        "saved_token": token.to_dict()
-    })
-
-@api.route("tokens", methods=["DELETE"])
-def delete_token():
-    return jsonify({
-        "tokens": "got deleted"
+        "message": "Got a cool shaded portrait. Thanks!"
     })
 
 # CRUD questions
@@ -55,6 +43,30 @@ def delete_question():
     return jsonify({
         "questions": "got deleted"
     })
+
+# CRUD tokens
+@api.route("tokens")
+def read_tokens():
+    return jsonify({
+        "tokens": Token.serialize_query_result(Token.query.filter({"active": 1}))
+    })
+
+@api.route("tokens", methods=["POST"])
+def create_token():
+    data = request.get_json()
+    token = Token(name=data["name"], active=1 )
+    db_session.add(token)
+    db_session.commit()
+    return jsonify({
+        "saved_token": token.to_dict()
+    })
+
+@api.route("tokens", methods=["DELETE"])
+def delete_token():
+    return jsonify({
+        "tokens": "got deleted"
+    })
+
 
 # CRUD token-values
 @api.route("token_values")
@@ -97,7 +109,7 @@ def create_or_update_token_value():
             )
         # now add to session, mark as dirty
         db_session.add(token_value)
-        token_value.value = token_value.value + effect.delta * sign 
+        token_value.value = max(min(token_value.value + effect.delta * sign, 100),0)
         updated_tokens.append(token_value)
 
     # make all updates
